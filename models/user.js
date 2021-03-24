@@ -4,7 +4,6 @@ const db = require("../db");
 const bcrypt = require("bcrypt");
 const { sqlForPartialUpdate } = require("../helpers/sql");
 const { NotFoundError, BadRequestError, UnauthorizedError } = require("../expressError");
-
 const { BCRYPT_WORK_FACTOR } = require("../config.js");
 
 /** Related functions for users. */
@@ -122,11 +121,16 @@ class User {
            WHERE username = $1`,
 			[username]
 		);
-
 		const user = userRes.rows[0];
-
 		if (!user) throw new NotFoundError(`No user: ${username}`);
 
+		const applicationsRes = await db.query(
+			`
+		SELECT job_id FROM applications WHERE username=$1`,
+			[username]
+		);
+
+		user.applications = applicationsRes.rows.map(a => a.job_id);
 		return user;
 	}
 
@@ -189,6 +193,25 @@ class User {
 		const user = result.rows[0];
 
 		if (!user) throw new NotFoundError(`No user: ${username}`);
+	}
+
+	/** Apply for job.
+	 * Updates applications table in db with username and job id.
+	 **/
+	static async apply(username, jobId) {
+		let userRes = await db.query(`SELECT username FROM users WHERE username =$1`, [username]);
+		if (!userRes.rows[0]) throw new NotFoundError(`No user found: ${username}`);
+
+		let jobRes = await db.query(`SELECT id FROM jobs WHERE id =$1`, [jobId]);
+		if (!jobRes.rows[0]) throw new NotFoundError(`No job found: ${jobId}`);
+
+		await db.query(
+			`
+		INSERT INTO applications
+		(username, job_id) VALUES ($1, $2)
+		`,
+			[username, jobId]
+		);
 	}
 }
 

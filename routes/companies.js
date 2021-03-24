@@ -6,7 +6,7 @@ const jsonschema = require("jsonschema");
 const express = require("express");
 
 const { BadRequestError } = require("../expressError");
-const { ensureLoggedIn, ensureIsAdmin } = require("../middleware/auth");
+const { ensureIsAdmin } = require("../middleware/auth");
 const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
@@ -23,7 +23,7 @@ const router = new express.Router();
  * Authorization required: login
  */
 
-router.post("/", ensureIsAdmin, async function (req, res, next) {
+router.post("/", ensureIsAdmin, async (req, res, next) => {
 	try {
 		const validator = jsonschema.validate(req.body, companyNewSchema);
 		if (!validator.valid) {
@@ -49,7 +49,7 @@ router.post("/", ensureIsAdmin, async function (req, res, next) {
  * Authorization required: none
  */
 
-router.get("/", async function (req, res, next) {
+router.get("/", async (req, res, next) => {
 	try {
 		const q = req.query;
 		// arrive as strings from querystring, but we want as ints
@@ -70,7 +70,7 @@ router.get("/", async function (req, res, next) {
  * Authorization required: none
  */
 
-router.get("/:handle", async function (req, res, next) {
+router.get("/:handle", async (req, res, next) => {
 	try {
 		const company = await Company.get(req.params.handle);
 		return res.json({ company });
@@ -90,7 +90,7 @@ router.get("/:handle", async function (req, res, next) {
  * Authorization required: login
  */
 
-router.patch("/:handle", ensureIsAdmin, async function (req, res, next) {
+router.patch("/:handle", ensureIsAdmin, async (req, res, next) => {
 	try {
 		const validator = jsonschema.validate(req.body, companyUpdateSchema);
 		if (!validator.valid) {
@@ -110,10 +110,11 @@ router.patch("/:handle", ensureIsAdmin, async function (req, res, next) {
  * Authorization: login
  */
 
-router.delete("/:handle", ensureIsAdmin, async function (req, res, next) {
+router.delete("/:handle", ensureIsAdmin, async (req, res, next) => {
 	try {
-		await Company.remove(req.params.handle);
-		return res.json({ deleted: req.params.handle });
+		const { handle } = req.params;
+		await Company.remove(handle);
+		return res.json({ deleted: handle });
 	} catch (err) {
 		return next(err);
 	}

@@ -8,11 +8,9 @@ const { SECRET_KEY } = require("../config");
 const testJwt = jwt.sign({ username: "test", isAdmin: false }, SECRET_KEY);
 const badJwt = jwt.sign({ username: "test", isAdmin: false }, "wrong");
 
-describe("authenticateJWT", function () {
-	test("works: via header", function () {
+describe("authenticateJWT", () => {
+	test("works: via header", () => {
 		expect.assertions(2);
-		//there are multiple ways to pass an authorization token, this is how you pass it in the header.
-		//this has been provided to show you another way to pass the token. you are only expected to read this code for this project.
 		const req = { headers: { authorization: `Bearer ${testJwt}` } };
 		const res = { locals: {} };
 		const next = function (err) {
@@ -28,7 +26,7 @@ describe("authenticateJWT", function () {
 		});
 	});
 
-	test("works: no header", function () {
+	test("works: no header", () => {
 		expect.assertions(2);
 		const req = {};
 		const res = { locals: {} };
@@ -39,7 +37,7 @@ describe("authenticateJWT", function () {
 		expect(res.locals).toEqual({});
 	});
 
-	test("works: invalid token", function () {
+	test("works: invalid token", () => {
 		expect.assertions(2);
 		const req = { headers: { authorization: `Bearer ${badJwt}` } };
 		const res = { locals: {} };
@@ -51,7 +49,7 @@ describe("authenticateJWT", function () {
 	});
 });
 
-describe("ensureLoggedIn", function () {
+describe("ensureLoggedIn", () => {
 	test("works", function () {
 		expect.assertions(1);
 		const req = {};
@@ -62,7 +60,7 @@ describe("ensureLoggedIn", function () {
 		ensureLoggedIn(req, res, next);
 	});
 
-	test("unauth if no login", function () {
+	test("unauth if no login", () => {
 		expect.assertions(1);
 		const req = {};
 		const res = { locals: {} };
@@ -73,8 +71,8 @@ describe("ensureLoggedIn", function () {
 	});
 });
 
-describe("ensureIsAdmin", function () {
-	test("error if not an admin", function () {
+describe("ensureIsAdmin", () => {
+	test("error if not an admin", () => {
 		expect.assertions(1);
 		const req = {};
 		const res = { locals: { user: { username: "test", isAdmin: false } } };
@@ -85,8 +83,8 @@ describe("ensureIsAdmin", function () {
 	});
 });
 
-describe("ensureIsAdminOrUser", function () {
-	test("is admin && is current user", function () {
+describe("ensureIsAdminOrUser", () => {
+	test("is admin && is current user", () => {
 		expect.assertions(1);
 		const req = { params: { username: "test" } };
 		const res = { locals: { user: { username: "test", isAdmin: true } } };
@@ -95,7 +93,7 @@ describe("ensureIsAdminOrUser", function () {
 		};
 		ensureIsAdminOrUser(req, res, next);
 	});
-	test("is NOT admin && is current user", function () {
+	test("is NOT admin && is current user", () => {
 		expect.assertions(1);
 		const req = { params: { username: "test" } };
 		const res = { locals: { user: { username: "test", isAdmin: false } } };
@@ -104,7 +102,7 @@ describe("ensureIsAdminOrUser", function () {
 		};
 		ensureIsAdminOrUser(req, res, next);
 	});
-	test("throw error : is NOT admin && is NOT current user", function () {
+	test("throw error : is NOT admin && is NOT current user", () => {
 		expect.assertions(1);
 		const req = { params: { username: "test" } };
 		const res = { locals: { user: { username: "notuser", isAdmin: false } } };
